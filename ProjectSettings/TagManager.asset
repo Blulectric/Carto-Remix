@@ -6,6 +6,10 @@ TagManager:
   tags:
   - MapTile
   - WorldTile
+  - Enemy
+  - Piece
+  - PlayerProjectile
+  - canvas
   layers:
   - Default
   - TransparentFX
@@ -14,8 +18,8 @@ TagManager:
   - Water
   - UI
   - Tiles
-  - 
-  - 
+  - PlayerProjectile
+  - Enemy
   - 
   - 
   - 

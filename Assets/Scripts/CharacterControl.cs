@@ -6,7 +6,18 @@ public class CharacterControl: MonoBehaviour
 {
 
     public float speed = 100.0f;
+    public float health = 100.0f;
+
+    public float fireRate = 0.1f;
+    private float nextFire = 0.0f;
+
     public Rigidbody2D rb;
+    public MapController mapScript;
+    public GameObject projectile;
+
+    private float translationX;
+    private float translationY;
+    private Vector3 heading = new Vector3(0,1,0);
 
     public SpriteRenderer CharacterSprite;
     public SpriteRenderer CompanionSprite;
@@ -17,7 +28,6 @@ public class CharacterControl: MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
 
@@ -51,16 +61,91 @@ public class CharacterControl: MonoBehaviour
         }
     }
 
+
+    void OnGUI()
+    {
+
+        if ( Event.current.Equals(Event.KeyboardEvent("space")) && Time.time > nextFire)
+        {
+            nextFire = Time.time + fireRate;
+
+            GameObject shotInstance = Instantiate(projectile, transform.position, transform.rotation);
+            shotInstance.GetComponent<Rigidbody2D>().velocity = heading*10;
+        }
+
+
+
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        //detect if player touches something that can damage them
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            Debug.Log("hit enemy");
+        }
+        //detect if player touches a piece
+        if (other.gameObject.CompareTag("Piece"))
+        {
+            Debug.Log("pick up piece" + other.transform.name);
+            if (other.transform.name == "Piece2")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(1);
+            }
+            if (other.transform.name == "Piece3")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(2);
+            }
+            if (other.transform.name == "Piece4")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(3);
+            }
+            if (other.transform.name == "Piece5")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(4);
+            }
+            if (other.transform.name == "Piece6")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(5);
+            }
+            if (other.transform.name == "Piece7")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(6);
+            }
+            if (other.transform.name == "Piece8")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(7);
+            }
+            if (other.transform.name == "Piece9")
+            {
+                Destroy(other.gameObject);
+                mapScript.addTile(8);
+            }
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         transform.eulerAngles = new Vector3(0,0,0); //keep the character at the same rotation even when parented to a tile that gets rotated
 
-        // Get the horizontal and vertical axis.
-        // By default they are mapped to the arrow keys.
-        // The value is in the range -1 to 1
-        float translationX = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
-        float translationY = Input.GetAxis("Vertical") * speed * Time.deltaTime;
+        translationX = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
+        translationY = Input.GetAxis("Vertical") * speed * Time.deltaTime;
+
+
+
+        if ( (Mathf.Abs(Input.GetAxisRaw("Horizontal")) + Mathf.Abs(Input.GetAxisRaw("Vertical"))) > 0 )
+        {
+            //if holding any direction, update player's heading direction which is used elsewhere to choose which direction to shoot projectile
+            heading = Vector3.Normalize(rb.velocity);
+        }
 
         //if (translationX>0) //add when we get the sprite
         //{
@@ -71,13 +156,11 @@ public class CharacterControl: MonoBehaviour
         //    CharacterSprite.sprite = CharacterSpriteDn
         //}
 
-        // Move translation along the object's z-axis
-        //transform.Translate(translationX, translationY, 0);
         
         rb.AddForce(Vector3.up * translationY);
         rb.AddForce(Vector3.right * translationX);
 
-        //set parent to uh closes tile but when its moved it might not follow if player doesnt move before this runs :(
+        //set parent to closest tile
         if (FindClosestTile() != null)
         {
             transform.SetParent(FindClosestTile().transform);

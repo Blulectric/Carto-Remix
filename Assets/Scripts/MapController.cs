@@ -20,9 +20,13 @@ public class MapController : MonoBehaviour
 
     public Vector2 selectorPos = new Vector2(0, 0);
 
+    //private int totalPlaced = 1;
+
     private GameObject holdingTile = null; //reference to tile being held
 
     private GameObject[] allworldtiles;
+
+    private RaycastHit2D[] hits;
 
     public int canvasGrid; //distance a tile can move on the map's canvas
     public int storageGrid; //distance between tiles in storage ui
@@ -48,6 +52,21 @@ public class MapController : MonoBehaviour
         tile = Instantiate(tilePrefabs[num]) as GameObject;
         tile.transform.parent = storageUI.transform;
         tile.transform.localScale = new Vector3(1,1,1); //resize for storage UI
+
+        //if (num < 8)
+        //{
+        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
+        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
+        //    tile.transform.parent = storageUI.transform;
+        //}
+        //else
+        //{
+        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
+        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
+        //    tile.transform.parent = mapUI.transform;
+        //    tile.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 0, 0); //should be positioned where the center of the donut is tho
+        //}
+
     }
 
 
@@ -103,6 +122,7 @@ public class MapController : MonoBehaviour
 
     public void placeAllWorldTiles()
     {
+        WorldTiles.connectedWrong = false;
         allworldtiles = GameObject.FindGameObjectsWithTag("MapTile");
         foreach (GameObject child in allworldtiles)
         {
@@ -116,6 +136,7 @@ public class MapController : MonoBehaviour
                 child.GetComponent<WorldTiles>().placeWorldTile(true);
             }
         }
+        WorldTiles.totalPlacedTiles = 0; //reset counter so it doesnt count over what it needs
     }
 
     public GameObject FindClosestTile()
@@ -143,6 +164,13 @@ public class MapController : MonoBehaviour
         {
             return null;
         }
+    }
+
+
+    public void placeWinnerTile()
+    {
+        Debug.Log("YAY!!! GENERATE WINNER TILE!");
+        addTile(8);
     }
 
     // button press stuff
@@ -192,8 +220,15 @@ public class MapController : MonoBehaviour
             //open/close tile storage
             if (Event.current.Equals(Event.KeyboardEvent("x")))
             {
-               // placeAllWorldTiles();//also here cause storing these needs to cause an update to the borders aswell ;-;
+                // placeAllWorldTiles();//also here cause storing these needs to cause an update to the borders aswell ;-;
+                if (holdingTile != null)
+                {
+                    Debug.Log("cant close while holding a tile");
+                }
+                else
+                {
                 ToggleStorage(1); // the true/false tells the function to uh
+                }
             }
 
             // up down left right and wasd controls
@@ -254,6 +289,11 @@ public class MapController : MonoBehaviour
                 {
 
                     holdingTile = FindClosestTile();
+                    //if (holdingTile.transform.parent == mapUI) 
+                    //{
+                    //    totalPlaced -= 1; //decrement total placed tiles when a player picks up a tile that's on the map. used to check when all tiles are placed
+                    //    Debug.Log("took away a tile:"+totalPlaced);
+                    //}
                     holdingTile.transform.SetParent(selector.transform);
                     selector.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                     if (toggleStorage)
@@ -265,16 +305,86 @@ public class MapController : MonoBehaviour
                 else
                 //place a tile where the selector is
                 {
-                    selector.transform.localScale = new Vector3(1, 1, 1);
-                    holdingTile.transform.SetParent(mapUI.transform);
-                    holdingTile.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
-                    holdingTile.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
-                    holdingTile.GetComponent<RectTransform>().anchoredPosition = selectorPos;
 
-                    //set world tiles after placement
-                    placeAllWorldTiles();
+                    int layer = 6; //the tile trigger collider layer
+                    int layerMask = 1 << layer; //why does it have to be written like this??????????????
 
-                    holdingTile = null; //let rest of script know im not holding a tile
+                    bool canPlace = true;
+
+                    // Cast a ray in tile's UP transform
+                    hits = Physics2D.RaycastAll(selector.transform.position, holdingTile.transform.up, 100, layerMask);
+
+                    if (hits.Length == 2) //if 2 hits are detected then that means player is trying to connect 2 pieces
+                    {
+                        if (hits[0].transform.name == hits[1].transform.name) //compare the border collider name of each side, if the name is the same then can place
+                        {
+                        }
+                        else
+                        {
+                            canPlace = false;
+                        }
+                    }
+                    // Cast a ray in tile's DOWN transform
+                    hits = Physics2D.RaycastAll(selector.transform.position, -holdingTile.transform.up, 100, layerMask);
+
+                    if (hits.Length == 2) //if 2 hits are detected then that means player is trying to connect 2 pieces
+                    {
+                        if (hits[0].transform.name == hits[1].transform.name) //compare the border collider name of each side, if the name is the same then can place
+                        {
+                        }
+                        else
+                        {
+                            canPlace = false;
+                        }
+                    }
+                    // Cast a ray in tile's RIGHT transform
+                    hits = Physics2D.RaycastAll(selector.transform.position, holdingTile.transform.right, 100, layerMask);
+
+                    if (hits.Length == 2) //if 2 hits are detected then that means player is trying to connect 2 pieces
+                    {
+                        if (hits[0].transform.name == hits[1].transform.name) //compare the border collider name of each side, if the name is the same then can place
+                        {
+                        }
+                        else
+                        {
+                            canPlace = false;
+                        }
+                    }
+                    // Cast a ray in tile's LEFT transform
+                    hits = Physics2D.RaycastAll(selector.transform.position, -holdingTile.transform.right, 100, layerMask);
+
+                    if (hits.Length == 2) //if 2 hits are detected then that means player is trying to connect 2 pieces
+                    {
+                        if (hits[0].transform.name == hits[1].transform.name) //compare the border collider name of each side, if the name is the same then can place
+                        {
+                        }
+                        else
+                        {
+                            canPlace = false;
+                        }
+                    }
+
+                    //Debug.Log(canPlace);
+
+                    if (canPlace)
+                    {
+                        //totalPlaced += 1; //increment total placed by 1 when a tile is successfully placed, this is used to check when all tiles are placed.
+                        //Debug.Log("added a tile:" + totalPlaced); //still doesnt know if they are in the right places though..
+                        selector.transform.localScale = new Vector3(1, 1, 1);
+                        holdingTile.transform.SetParent(mapUI.transform);
+                        holdingTile.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+                        holdingTile.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+                        holdingTile.GetComponent<RectTransform>().anchoredPosition = selectorPos;
+
+                        //set world tiles after placement
+                        placeAllWorldTiles();
+                        holdingTile = null; //let rest of script know im not holding a tile
+                    }
+                    else
+                    {
+                        Debug.Log("cannot place this here!");
+                    }
+                    
                     if (toggleStorage)
                     {
                         ToggleStorage(0);
@@ -283,9 +393,17 @@ public class MapController : MonoBehaviour
 
             }
 
+            if (Event.current.Equals(Event.KeyboardEvent("z")))
+            {
+                //Debug.Log(WorldTiles.totalPlacedTiles);
+
+            }
+
             if (Event.current.Equals(Event.KeyboardEvent("return")))
             {
-                Debug.Log("return; put tile back into storage"); //needed
+                Debug.Log(WorldTiles.totalPlacedTiles);
+                //WorldTiles.totalPlacedTiles = 0; //reset counter so it doesnt count over what it needs
+
             }
 
         }

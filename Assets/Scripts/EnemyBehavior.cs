@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemyBehavior : MonoBehaviour
 {
     public float Speed;
+    public float HP;
 
     private GameObject homeTile;
     private GameObject player;
@@ -19,7 +20,22 @@ public class EnemyBehavior : MonoBehaviour
         homeTile = transform.parent.gameObject;
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        //DIE
+        if (other.gameObject.CompareTag("PlayerProjectile"))
+        {
+            HP -= 1;
+            Debug.Log(HP);
+            if (HP<=0)
+            {
+                Destroy(other.gameObject);
+                Destroy(gameObject);
+            }
+        }
+    }
+
+        void OnTriggerEnter2D(Collider2D other)
     {
 
         //moves enemy to it's new tile wait why didnt i just do this for the character instead of the complicated thing

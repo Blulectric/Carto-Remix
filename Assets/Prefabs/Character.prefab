@@ -96,10 +96,10 @@ GameObject:
   - component: {fileID: 7343342683076008375}
   - component: {fileID: 8010089212021951537}
   - component: {fileID: 4349617511905907897}
-  - component: {fileID: 7747215094866885412}
+  - component: {fileID: 7779878005408041975}
   m_Layer: 2
   m_Name: Character
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -235,7 +235,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &7747215094866885412
+--- !u!114 &7779878005408041975
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -248,7 +248,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 100
+  health: 100
   rb: {fileID: 4349617511905907897}
+  mapScript: {fileID: 0}
+  projectile: {fileID: 0}
+  CharacterSprite: {fileID: 0}
+  CompanionSprite: {fileID: 0}
+  CharacterSpriteUp: {fileID: 0}
+  CharacterSpriteDn: {fileID: 0}
 --- !u!1 &6278160890108687541
 GameObject:
   m_ObjectHideFlags: 0

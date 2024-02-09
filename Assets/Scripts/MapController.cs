@@ -5,9 +5,8 @@ using UnityEngine;
 
 public class MapController : MonoBehaviour
 {
-    //map tiles will have a "tear" border that will only appear on sides that have no other tiles touching. will probably use a mask on the four sides or just be four textures that appear or dissapear
-
     public bool mapOpen = false;
+    public bool menuOpen = false;
     public CanvasGroup mapCanvas;
 
     public GameObject[] tilePrefabs;
@@ -44,178 +43,41 @@ public class MapController : MonoBehaviour
         movestep = canvasGrid;
     }
 
-    // function that adds tiles to the storage, another script will call this function
-    public void addTile(int num)
+
+    // all the button press controls
+    void OnGUI()
     {
-        Debug.Log("add piece #" + num + " to storage array");
-
-        tile = Instantiate(tilePrefabs[num]) as GameObject;
-        tile.transform.parent = storageUI.transform;
-        tile.transform.localScale = new Vector3(1,1,1); //resize for storage UI
-
-        //if (num < 8)
-        //{
-        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
-        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
-        //    tile.transform.parent = storageUI.transform;
-        //}
-        //else
-        //{
-        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
-        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
-        //    tile.transform.parent = mapUI.transform;
-        //    tile.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 0, 0); //should be positioned where the center of the donut is tho
-        //}
-
-    }
-
-
-
-    private bool toggleStorage = false;
-
-    void ToggleStorage(int withSelector)
-    {
-        toggleStorage = !toggleStorage;
-
-
-        if (withSelector == 0)
+        // escape to bring up map/menu
+        if (Event.current.Equals(Event.KeyboardEvent("escape")))
         {
-            if (toggleStorage)
+            if (holdingTile != null)
             {
-                selector.transform.SetParent(storageUI.transform, false);
-                selectorPos = new Vector2(-400, 0);
-                movestep = storageGrid;
-            }
-            else 
-            {
-                selector.transform.SetParent(mapUI.transform, false);
-                selectorPos = new Vector2(0, 0);
-                movestep = canvasGrid;
-            }
-        }
-        else
-        {
-            if (toggleStorage) //OPEN UI
-            {
-                if (holdingTile != null) { selector.transform.localScale = new Vector3(1,1,1); holdingTile.transform.SetParent(mapUI.transform);  holdingTile = null; } //if storage is closed while something is held, it should not go back to storage or else player will go to the backrooms D: .
-
-                //mapbounds = 400;
-                //make this tween later
-                mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,0,0);
-                //also move selector to the tile storage ui for selection
-                selector.transform.SetParent(storageUI.transform, false);
-                selectorPos = new Vector2(-400, 0);
-                movestep = storageGrid;
-            }
-            else //CLOSE UI
-            {
-                //mapbounds = 400;
-                //make this tween later
-                mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,-120,0);
-
-                selector.transform.SetParent(mapUI.transform, false);
-                selectorPos = new Vector2(0, 0);
-                movestep = canvasGrid;
-            }
-        }
-    }
-
-    public void placeAllWorldTiles()
-    {
-        WorldTiles.connectedWrong = false;
-        allworldtiles = GameObject.FindGameObjectsWithTag("MapTile");
-        foreach (GameObject child in allworldtiles)
-        {
-            if (child.transform.parent.gameObject == mapUI) //only place if not in storage
-            {
-                child.GetComponent<WorldTiles>().placeWorldTile(false);
+                Debug.Log("cant close menu while holding a tile");
             }
             else
             {
-                //else if tile is in storage, send this tile to the BACKROOMS
-                child.GetComponent<WorldTiles>().placeWorldTile(true);
+                menuOpen = !menuOpen;
+                if (menuOpen)
+                {
+                    mapOpen = true; // whenever menu is open, puts player to map screen first
+                    mapCanvas.alpha = 1;
+                    Time.timeScale = 0f; //freeze timescale when in menu, easy way to prevent enemies and players from physically moving while in menu
+                }
+                else
+                {
+                    //also have this here becacuse secretly it has to run twice because uh
+                    placeAllWorldTiles();
+
+                    mapOpen = false;
+                    mapCanvas.alpha = 0;
+                    Time.timeScale = 1.0f;
+                }
             }
         }
-        WorldTiles.totalPlacedTiles = 0; //reset counter so it doesnt count over what it needs
-    }
 
-    public GameObject FindClosestTile()
-    {
-        GameObject[] gos;
-        gos = GameObject.FindGameObjectsWithTag("MapTile");
-        GameObject closest = null;
-        float distance = Mathf.Infinity;
-        Vector3 position = selector.transform.position;
-        foreach (GameObject go in gos)
-        {
-            Vector3 diff = go.transform.position - position;
-            float curDistance = diff.sqrMagnitude;
-            if (curDistance < distance)
-            {
-                closest = go;
-                distance = curDistance;
-            }
-        }
-        if (distance < 10)
-        {
-            return closest;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-
-    public void placeWinnerTile()
-    {
-        Debug.Log("YAY!!! GENERATE WINNER TILE!");
-        addTile(8);
-    }
-
-    // button press stuff
-    void OnGUI()
-    {
+        //if on the map screen in pause menu, enables all the map controls
         if (mapOpen)
         {
-
-            //debug add tiles by number press
-            if (Event.current.Equals(Event.KeyboardEvent("1")))
-            {
-                addTile(0);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("2")))
-            {
-                addTile(1);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("3")))
-            {
-                addTile(2);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("4")))
-            {
-                addTile(3);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("5")))
-            {
-                addTile(4);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("6")))
-            {
-                addTile(5);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("7")))
-            {
-                addTile(6);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("8")))
-            {
-                addTile(7);
-            }
-            if (Event.current.Equals(Event.KeyboardEvent("9")))
-            {
-                addTile(8);
-            }
 
             //open/close tile storage
             if (Event.current.Equals(Event.KeyboardEvent("x")))
@@ -227,7 +89,7 @@ public class MapController : MonoBehaviour
                 }
                 else
                 {
-                ToggleStorage(1); // the true/false tells the function to uh
+                    ToggleStorage(1); // the true/false tells the function to uh
                 }
             }
 
@@ -384,7 +246,7 @@ public class MapController : MonoBehaviour
                     {
                         Debug.Log("cannot place this here!");
                     }
-                    
+
                     if (toggleStorage)
                     {
                         ToggleStorage(0);
@@ -401,44 +263,185 @@ public class MapController : MonoBehaviour
 
             if (Event.current.Equals(Event.KeyboardEvent("return")))
             {
-                Debug.Log(WorldTiles.totalPlacedTiles);
+                //Debug.Log(WorldTiles.totalPlacedTiles);
                 //WorldTiles.totalPlacedTiles = 0; //reset counter so it doesnt count over what it needs
 
             }
 
+            //debug add tiles by number press
+            if (Event.current.Equals(Event.KeyboardEvent("1")))
+            {
+                addTile(0);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("2")))
+            {
+                addTile(1);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("3")))
+            {
+                addTile(2);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("4")))
+            {
+                addTile(3);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("5")))
+            {
+                addTile(4);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("6")))
+            {
+                addTile(5);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("7")))
+            {
+                addTile(6);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("8")))
+            {
+                addTile(7);
+            }
+            if (Event.current.Equals(Event.KeyboardEvent("9")))
+            {
+                addTile(8);
+            }
+
         }
 
-        if (Event.current.Equals(Event.KeyboardEvent("escape")))
-        {
-            if (holdingTile != null)
-            {
-                Debug.Log("cant close while holding a tile");
-            }
-            else
-            {
-                mapOpen = !mapOpen;
-                if (mapOpen)
-                {
-                    mapCanvas.alpha = 1;
-                    Time.timeScale = 0f; //freeze timescale when in menu, easy way to prevent enemies and players from physically moving while in menu
-                }
-                else
-                {
-                    //also have this here becacuse secretly it has to run twice because uh
-                    placeAllWorldTiles();
 
-                    mapCanvas.alpha = 0;
-                    Time.timeScale = 1.0f;
-                }
-            }
-
-        }
 
         //moves map selector
         selector.GetComponent<RectTransform>().anchoredPosition = selectorPos;
 
     }
 
+    // function that adds tiles to the storage, another script will call this function
+    public void addTile(int num)
+    {
+        Debug.Log("add piece #" + num + " to storage array");
 
+        tile = Instantiate(tilePrefabs[num]) as GameObject;
+        tile.transform.parent = storageUI.transform;
+        tile.transform.localScale = new Vector3(1,1,1); //resize for storage UI
+
+        //if (num < 8)
+        //{
+        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
+        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
+        //    tile.transform.parent = storageUI.transform;
+        //}
+        //else
+        //{
+        //    tile = Instantiate(tilePrefabs[num]) as GameObject;
+        //    tile.transform.localScale = new Vector3(1, 1, 1); //resize for storage UI
+        //    tile.transform.parent = mapUI.transform;
+        //    tile.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, 0, 0); //should be positioned where the center of the donut is tho
+        //}
+
+    }
+
+
+
+    private bool toggleStorage = false;
+
+    void ToggleStorage(int withSelector)
+    {
+        toggleStorage = !toggleStorage;
+
+
+        if (withSelector == 0)
+        {
+            if (toggleStorage)
+            {
+                selector.transform.SetParent(storageUI.transform, false);
+                selectorPos = new Vector2(-400, 0);
+                movestep = storageGrid;
+            }
+            else 
+            {
+                selector.transform.SetParent(mapUI.transform, false);
+                selectorPos = new Vector2(0, 0);
+                movestep = canvasGrid;
+            }
+        }
+        else
+        {
+            if (toggleStorage) //OPEN UI
+            {
+                if (holdingTile != null) { selector.transform.localScale = new Vector3(1,1,1); holdingTile.transform.SetParent(mapUI.transform);  holdingTile = null; } //if storage is closed while something is held, it should not go back to storage or else player will go to the backrooms D: .
+
+                //mapbounds = 400;
+                //make this tween later
+                mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,0,0);
+                //also move selector to the tile storage ui for selection
+                selector.transform.SetParent(storageUI.transform, false);
+                selectorPos = new Vector2(-400, 0);
+                movestep = storageGrid;
+            }
+            else //CLOSE UI
+            {
+                //mapbounds = 400;
+                //make this tween later
+                mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,-120,0);
+
+                selector.transform.SetParent(mapUI.transform, false);
+                selectorPos = new Vector2(0, 0);
+                movestep = canvasGrid;
+            }
+        }
+    }
+
+    public void placeAllWorldTiles()
+    {
+        WorldTiles.connectedWrong = false;
+        allworldtiles = GameObject.FindGameObjectsWithTag("MapTile");
+        foreach (GameObject child in allworldtiles)
+        {
+            if (child.transform.parent.gameObject == mapUI) //only place if not in storage
+            {
+                child.GetComponent<WorldTiles>().placeWorldTile(false);
+            }
+            else
+            {
+                //else if tile is in storage, send this tile to the BACKROOMS
+                child.GetComponent<WorldTiles>().placeWorldTile(true);
+            }
+        }
+        WorldTiles.totalPlacedTiles = 0; //reset counter so it doesnt count over what it needs
+    }
+
+    public GameObject FindClosestTile()
+    {
+        GameObject[] gos;
+        gos = GameObject.FindGameObjectsWithTag("MapTile");
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 position = selector.transform.position;
+        foreach (GameObject go in gos)
+        {
+            Vector3 diff = go.transform.position - position;
+            float curDistance = diff.sqrMagnitude;
+            if (curDistance < distance)
+            {
+                closest = go;
+                distance = curDistance;
+            }
+        }
+        if (distance < 10)
+        {
+            return closest;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
+    public void placeWinnerTile()
+    {
+        Debug.Log("YAY!!! GENERATE WINNER TILE!");
+        addTile(8);
+    }
 
     }

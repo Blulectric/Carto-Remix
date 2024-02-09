@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 1651846754873959692}
   - component: {fileID: 2368608964143360266}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: Collider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -530,7 +530,7 @@ GameObject:
   - component: {fileID: 9144843328362938769}
   - component: {fileID: 1735542248386853102}
   - component: {fileID: 8146008880385218643}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Piece6
   m_TagString: Piece
   m_Icon: {fileID: 0}

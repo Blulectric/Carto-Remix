@@ -6,6 +6,7 @@ public class EnemyBehavior : MonoBehaviour
 {
     public float Speed;
     public float HP;
+    public RuntimeAnimatorController enemySpriteAnim;
 
     private GameObject homeTile;
     private GameObject player;
@@ -18,6 +19,8 @@ public class EnemyBehavior : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody2D>();
         player = GameObject.FindWithTag("Player");
         homeTile = transform.parent.gameObject;
+
+        gameObject.GetComponent<Animator>().runtimeAnimatorController = enemySpriteAnim;
     }
 
     void OnCollisionEnter2D(Collision2D other)
@@ -49,7 +52,8 @@ public class EnemyBehavior : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        //Debug.Log( (transform.position-transform.parent.transform.position).magnitude );
+        transform.eulerAngles = new Vector3(0, 0, 0); //keep the character at the same rotation even when parented to a tile that gets rotated
+
         targetPos = player.transform.position;
         Vector3 direction = (targetPos - transform.position);
         direction.Normalize();

@@ -6,10 +6,16 @@ public class CharacterControl: MonoBehaviour
 {
 
     public float speed = 100.0f;
-    public float health = 100.0f;
+    public float maxHealth = 6f;
+    public float health = 6f;
+    public static bool gameOver = false;
 
     public float fireRate = 0.1f;
     private float nextFire = 0.0f;
+
+    public float hitIframes = 3f;
+    private float nextHit = 0.0f;
+    private int blinkValue = 0;
 
     public Rigidbody2D rb;
     public MapController mapScript;
@@ -28,6 +34,8 @@ public class CharacterControl: MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameOver = false;
+        health = maxHealth;
     }
 
 
@@ -70,19 +78,28 @@ public class CharacterControl: MonoBehaviour
             nextFire = Time.time + fireRate;
 
             GameObject shotInstance = Instantiate(projectile, transform.position, transform.rotation);
-            shotInstance.GetComponent<Rigidbody2D>().velocity = heading*10;
+            shotInstance.GetComponent<Rigidbody2D>().velocity = -heading*10; //shoots in opposite of heading direction cause its just easier to attack approaching enemies that way
         }
 
 
 
     }
 
+
+
     void OnCollisionEnter2D(Collision2D other)
     {
         //detect if player touches something that can damage them
-        if (other.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy") && Time.time > nextHit)
         {
-            Debug.Log("hit enemy");
+            nextHit = Time.time + hitIframes;
+            health -= 1;
+            if (health <=0)
+            {
+                Debug.Log("YOU DEAD");
+                gameOver = true;
+                speed = 0;
+            }
         }
         //detect if player touches a piece
         if (other.gameObject.CompareTag("Piece"))
@@ -129,7 +146,14 @@ public class CharacterControl: MonoBehaviour
                 mapScript.addTile(8);
             }
         }
+
+        //detect if player touches win area
+        if (other.gameObject.CompareTag("Winner"))
+        {
+            Debug.Log("WINNER SCREEN :D");
+        }
     }
+
 
     // Update is called once per frame
     void Update()
@@ -166,6 +190,28 @@ public class CharacterControl: MonoBehaviour
             transform.SetParent(FindClosestTile().transform);
         }
 
+        //damage blink
+        if (Time.time < nextHit)
+        {
+            blinkValue += 1;
+
+            if (blinkValue>=8)
+            {
+                blinkValue = 0;
+            }
+            if (blinkValue <= 4)
+            {
+                CharacterSprite.enabled = true;
+            }
+            else
+            {
+                CharacterSprite.enabled = false;
+            }
+        }
+        else if (CharacterSprite.enabled == false)
+        {
+            CharacterSprite.enabled = true;
+        }
 
     }
 }

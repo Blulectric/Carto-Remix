@@ -10,6 +10,7 @@ TagManager:
   - Piece
   - PlayerProjectile
   - canvas
+  - Winner
   layers:
   - Default
   - TransparentFX
@@ -20,8 +21,8 @@ TagManager:
   - Tiles
   - PlayerProjectile
   - Enemy
-  - 
-  - 
+  - Pickup
+  - Winner
   - 
   - 
   - 

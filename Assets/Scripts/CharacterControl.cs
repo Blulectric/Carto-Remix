@@ -8,6 +8,8 @@ public class CharacterControl: MonoBehaviour
     public float speed = 100.0f;
     public float maxHealth = 6f;
     public float health = 6f;
+    public RectTransform HPMASK;
+
     public static bool gameOver = false;
 
     public float fireRate = 0.1f;
@@ -94,6 +96,9 @@ public class CharacterControl: MonoBehaviour
         {
             nextHit = Time.time + hitIframes;
             health -= 1;
+            float increment = 260 / maxHealth; //how much the bar will move up/down based on max hp and 260 (number mask reaches when the bar looks empty)
+
+            HPMASK.offsetMin = new Vector2(increment*(maxHealth-health), 2); //test
             if (health <=0)
             {
                 Debug.Log("YOU DEAD");

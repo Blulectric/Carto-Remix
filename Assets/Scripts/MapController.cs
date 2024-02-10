@@ -41,6 +41,7 @@ public class MapController : MonoBehaviour
     void Start()
     {
         movestep = canvasGrid;
+        placeAllWorldTiles();
     }
 
 
@@ -353,12 +354,14 @@ public class MapController : MonoBehaviour
         {
             if (toggleStorage)
             {
+                mapbounds = 400;
                 selector.transform.SetParent(storageUI.transform, false);
                 selectorPos = new Vector2(-400, 0);
                 movestep = storageGrid;
             }
             else 
             {
+                mapbounds = 100;
                 selector.transform.SetParent(mapUI.transform, false);
                 selectorPos = new Vector2(0, 0);
                 movestep = canvasGrid;
@@ -370,7 +373,7 @@ public class MapController : MonoBehaviour
             {
                 if (holdingTile != null) { selector.transform.localScale = new Vector3(1,1,1); holdingTile.transform.SetParent(mapUI.transform);  holdingTile = null; } //if storage is closed while something is held, it should not go back to storage or else player will go to the backrooms D: .
 
-                //mapbounds = 400;
+                mapbounds = 400;
                 //make this tween later
                 mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,0,0);
                 //also move selector to the tile storage ui for selection
@@ -380,7 +383,7 @@ public class MapController : MonoBehaviour
             }
             else //CLOSE UI
             {
-                //mapbounds = 400;
+                mapbounds = 100;
                 //make this tween later
                 mapUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,-120,0);
 
@@ -427,7 +430,7 @@ public class MapController : MonoBehaviour
                 distance = curDistance;
             }
         }
-        if (distance < 10)
+        if (distance < 10 && !closest.isStatic) //if cursor is close enough to pick up and the object can be picked up (isstatic)
         {
             return closest;
         }

@@ -34,7 +34,7 @@ public class WorldTiles : MonoBehaviour
         //Debug.Log(transform.name);
         if (transform.name == "Tile 1")
         {
-            placedTile.transform.position = new Vector3(0, 0, 0); //preset the first tile
+            //placedTile.transform.position = new Vector3(0, 0, 0); //preset the first tile
         }
         //if (transform.name == "Tile 9(Clone)")// :(
         //{
